@@ -1,23 +1,51 @@
 """Reads and writes on the `chunks` collection: vector search at request time, and the
 writes used by utils/ingest_documents.py to populate the knowledge base.
-
-MOCK: in-memory placeholder, nothing is persisted across process restarts and
-`find_nearest_chunks` never actually ranks by similarity. Replace with a real Firestore
-`find_nearest` vector query (see esercizio 12_firestore_dati) and real document writes.
 """
 
-from sage.domain.qa.models import Chunk
+from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
+from google.cloud.firestore_v1.vector import Vector
 
-_mock_store: dict[str, list[Chunk]] = {}
+from sage.config import get_app_config
+from sage.domain.qa.models import Chunk
+from sage.integrations.firestore.client import get_firestore_client
 
 
 def find_nearest_chunks(embedding: list[float]) -> list[Chunk]:
-    return []
+    config = get_app_config()
+    client = get_firestore_client()
+    collection = client.collection(config.firestore_collection)
+
+    vector_query = collection.find_nearest(
+        vector_field="embedding",
+        query_vector=Vector(embedding),
+        distance_measure=DistanceMeasure.COSINE,
+        limit=config.top_k,
+    )
+
+    results: list[Chunk] = []
+    for doc in vector_query.stream():
+        data = doc.to_dict() or {}
+        results.append(
+            Chunk(
+                id=doc.id,
+                text=data.get("text", ""),
+                source=data.get("source", ""),
+                section=data.get("section"),
+                chunk_index=int(data.get("chunk_index", 0)),
+            )
+        )
+    return results
 
 
 def delete_chunks_for_source(source: str) -> None:
     """Remove existing chunks for a document, so re-running the ingestion script is safe."""
-    _mock_store.pop(source, None)
+    config = get_app_config()
+    client = get_firestore_client()
+    collection = client.collection(config.firestore_collection)
+
+    docs = collection.where("source", "==", source).stream()
+    for doc in docs:
+        doc.reference.delete()
 
 
 def add_chunk(
@@ -28,6 +56,16 @@ def add_chunk(
     section: str | None,
     chunk_index: int,
 ) -> None:
-    _mock_store.setdefault(source, []).append(
-        Chunk(id=chunk_id, text=text, source=source, section=section, chunk_index=chunk_index)
+    config = get_app_config()
+    client = get_firestore_client()
+    collection = client.collection(config.firestore_collection)
+
+    collection.document(chunk_id).set(
+        {
+            "text": text,
+            "embedding": Vector(embedding),
+            "source": source,
+            "section": section,
+            "chunk_index": chunk_index,
+        }
     )

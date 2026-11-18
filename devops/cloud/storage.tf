@@ -3,7 +3,18 @@ resource "google_storage_bucket" "docs" {
   project                     = var.project_id
   location                    = var.region
   uniform_bucket_level_access = true
-  force_destroy               = true # ambiente di corso: si può distruggere anche se non vuoto
+  force_destroy               = true
+  labels                      = local.labels
+
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_storage_bucket" "instructions" {
+  name                        = local.instructions_bucket
+  project                     = var.project_id
+  location                    = var.region
+  uniform_bucket_level_access = true
+  force_destroy               = true
   labels                      = local.labels
 
   depends_on = [google_project_service.apis]

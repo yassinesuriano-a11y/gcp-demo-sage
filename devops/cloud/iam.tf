@@ -14,7 +14,7 @@ resource "google_project_iam_member" "run_vertex" {
   member  = "serviceAccount:${google_service_account.run.email}"
 }
 
-# Firestore (a livello di progetto: non esiste un ruolo per singolo database senza condizioni)
+# Firestore
 resource "google_project_iam_member" "run_firestore" {
   project = var.project_id
   role    = "roles/datastore.user"
@@ -38,6 +38,13 @@ resource "google_bigquery_dataset_iam_member" "run_bq_data" {
 # Bucket documenti: sola lettura
 resource "google_storage_bucket_iam_member" "run_docs" {
   bucket = google_storage_bucket.docs.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.run.email}"
+}
+
+# Bucket istruzioni: sola lettura
+resource "google_storage_bucket_iam_member" "run_instructions" {
+  bucket = google_storage_bucket.instructions.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.run.email}"
 }

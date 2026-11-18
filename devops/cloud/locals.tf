@@ -5,8 +5,9 @@ locals {
   # Cloud Run e Artifact Registry
   service_name = local.shared ? "${var.resource_prefix}-sage" : "sage"
 
-  # Bucket documenti
-  docs_bucket = local.shared ? "${var.resource_prefix}-sage-docs" : "${var.project_id}-sage-docs"
+  # Bucket documenti e istruzioni
+  docs_bucket         = local.shared ? "${var.resource_prefix}-sage-docs" : "${var.project_id}-sage-docs"
+  instructions_bucket = local.shared ? "${var.resource_prefix}-instructions" : "${var.project_id}-instructions"
 
   # Firestore: in un progetto c'è un solo "(default)", quindi un database per persona
   firestore_database = local.shared ? var.resource_prefix : "(default)"

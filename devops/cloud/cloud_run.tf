@@ -15,29 +15,19 @@ resource "google_cloud_run_v2_service" "sage" {
     }
 
     containers {
-      # Placeholder: l'immagine reale la pubblica deploy.yml (gcloud run deploy --image ...)
       image = var.placeholder_image
 
-      # I nomi delle variabili devono combaciare con quelli letti dal codice in sources/backend
       env {
-        name  = "GCP_PROJECT"
+        name  = "SAGE_PROJECT_ID"
         value = var.project_id
       }
       env {
-        name  = "GCP_REGION"
+        name  = "SAGE_REGION"
         value = var.region
       }
       env {
-        name  = "FIRESTORE_DATABASE"
-        value = google_firestore_database.sage.name
-      }
-      env {
-        name  = "BQ_DATASET"
-        value = google_bigquery_dataset.analytics.dataset_id
-      }
-      env {
-        name  = "DOCS_BUCKET"
-        value = google_storage_bucket.docs.name
+        name  = "SAGE_RESOURCE_PREFIX"
+        value = var.resource_prefix
       }
     }
   }

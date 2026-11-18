@@ -23,7 +23,7 @@ Nel repository su GitHub: **Settings → Secrets and variables → Actions → V
 aggiungi (repository variables, non secrets — non sono informazioni sensibili):
 
 | Nome | Valore | Esempio |
-|---|---|---|
+|---|---|---
 | `PROJECT_ID` | Il tuo project id GCP | `its-ict-mario-rossi` |
 | `PROJECT_NUMBER` | Stampato dallo script | `123456789012` |
 | `RESOURCE_PREFIX` | Solo progetto condiviso: il tuo prefisso. In un progetto dedicato **non creare la variabile** | `its-ict-sage-mario-rossi` |
